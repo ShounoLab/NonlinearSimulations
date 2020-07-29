@@ -1,3 +1,5 @@
+using Plots
+
 include("ssfm.jl")
 include("pseudospectral.jl")
 
@@ -14,18 +16,21 @@ config = NLSESettings(Nsteps, Δt, t_end, Ngrids, L)
 # initial state of the wave function
 ψ₀ = 2.0 * sech.(config.gridpoints)
 
-ssfm_result = SSFM(ψ₀, config)
-#spectral_result = PseudoSpectral(ψ₀, config; solver = Tsit5())
+#result = SSFM(ψ₀, config)
+result = PseudoSpectral(ψ₀, config)
 
-anim = @animate for t in 1:Nsteps
-    p = plot(ssfm_result.config.gridpoints,
-             abs.(ssfm_result.ψ[:, t]),
-             ylims = (0, maximum(abs.(ssfm_result.ψ))),
-             label = :none, lw = 2)
-    plot!(ssfm_result.config.gridpoints,
-          ssfm_result.Vₓ[:, t] ./ maximum(ssfm_result.Vₓ[:, t]) .*
-          maximum(abs.(ssfm_result.ψ)),
-          label = "potential (scaled)", lw = 2)
+
+# output a GIF animation
+ymax = maximum(hcat(abs.(result.ψ), result.Vₓ))
+anim = @animate for t in 1:result.config.Nsteps
+    p = plot(result.config.gridpoints,
+             abs.(result.ψ[:, t]),
+             ylims = (0, ymax),
+             label = "|psi|", lw = 2)
+    plot!(result.config.gridpoints,
+          result.Vₓ[:, t],
+          label = "potential", lw = 2)
 end
 
-gif(anim, "nlse.gif", fps = 30)
+gif(anim, "nlse_ssfm.gif", fps = 60)
+
