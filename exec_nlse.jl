@@ -1,7 +1,7 @@
 using Plots
 
-include("ssfm.jl")
-include("pseudospectral.jl")
+include("./NLSE/ssfm.jl")
+include("./NLSE/pseudospectral.jl")
 
 
 ### NLSE simulation by SSFM
@@ -34,3 +34,20 @@ end
 
 gif(anim, "nlse_ssfm.gif", fps = 60)
 
+gr()
+t_ary = 0:Δt:t_end
+
+
+Z = abs.(result.ψ)
+x = config.gridpoints
+D = config.Ngrids
+N = size(Z)[2]
+
+# Z: D×N matrix to draw
+# x: D vector
+p = plot()
+for n in 1:N
+    p = plot!(x, fill(n, D), Z[:, n],
+              color = :black, legend = false)
+end
+savefig(p, "hogefuga.png")
